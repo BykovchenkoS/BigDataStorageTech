@@ -51,7 +51,7 @@ x-airflow-common:
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.7.3}
-  # build: .
+  build: .
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -87,37 +87,37 @@ x-airflow-common:
 
 services:
   mongodb-ods:
-  image: mongo:6
-  container_name: mongodb-ods
-  ports:
-    - "27018:27017"
-  environment:
-    MONGO_INITDB_ROOT_USERNAME: root
-    MONGO_INITDB_ROOT_PASSWORD: example
-  volumes:
-    - mongodb_data:/data/db
+    image: mongo:6
+    container_name: mongodb-ods
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
 
   redis-ods:
-  image: redis:7
-  container_name: redis-ods
-  ports:
-    - "6380:6379"
-  command: redis-server --save 60 1 --loglevel warning
-  volumes:
-    - redis_data:/data
+    image: redis:7
+    container_name: redis-ods
+    ports:
+      - "6380:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
 
   oracle-ods:
-  image: gvenzl/oracle-xe:21-slim
-  container_name: oracle-ods
-  ports:
-    - "1522:1521"
-  environment:
-    ORACLE_PASSWORD: oracle
-    APP_USER: ods_user
-    APP_USER_PASSWORD: ods_pass
-  volumes:
-    - oracle_data:/opt/oracle/oradata
-  shm_size: 1g
+    image: gvenzl/oracle-xe:21-slim
+    container_name: oracle-ods
+    ports:
+      - "1522:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: ods_user
+      APP_USER_PASSWORD: ods_pass
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    shm_size: 1g
     
   postgres:
     image: postgres:13
