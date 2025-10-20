@@ -7,6 +7,7 @@ from airflow.operators.python import PythonOperator
 from pymongo import MongoClient
 import redis
 import oracledb as Oracle
+from config import AVIASALES_API_TOKEN
 
 
 default_args = {
@@ -22,7 +23,6 @@ default_args = {
 
 def extract_price_trends(**context):
     logging.info("Starting extraction from Aviasales API (price trends)")
-    API_TOKEN = "b7721379bd50af994b608f3216348cb4"
     routes = [('MOW', 'LED')]
     depart_month = '2025-10'
     all_prices = []
@@ -36,7 +36,7 @@ def extract_price_trends(**context):
                 'depart_date': depart_month,
                 'calendar_type': 'departure_date',
                 'currency': 'rub',
-                'token': API_TOKEN
+                'token': AVIASALES_API_TOKEN
             }
             response = requests.get(url, params=params, timeout=30)
 

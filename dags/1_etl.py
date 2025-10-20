@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 from pymongo import MongoClient
 import redis
 import oracledb as Oracle
-
+from config import AVIASALES_API_TOKEN
 
 default_args = {
     'owner': 'airflow',
@@ -22,7 +22,6 @@ default_args = {
 
 def extract_cheap_tickets(**context):
     logging.info("Starting extraction from Aviasales API")
-    API_TOKEN = "b7721379bd50af994b608f3216348cb4"
     destinations = ['LED', 'AER', 'OVB', 'KRR', 'GOJ', 'SVX', 'IST', 'TBS']
     all_tickets = []
     url = "https://api.travelpayouts.com/aviasales/v3/grouped_prices"
@@ -35,7 +34,7 @@ def extract_cheap_tickets(**context):
                 'currency': 'rub',
                 'departure_at': '2025-10',
                 'group_by': 'departure_at',
-                'token': API_TOKEN
+                'token': AVIASALES_API_TOKEN
             }
 
             response = requests.get(url, params=params, timeout=30)

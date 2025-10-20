@@ -7,6 +7,7 @@ from airflow.operators.python import PythonOperator
 from pymongo import MongoClient
 import redis
 import oracledb as Oracle
+from config import AVIASALES_API_TOKEN
 
 default_args = {
     'owner': 'airflow',
@@ -21,7 +22,6 @@ default_args = {
 
 def extract_popular_directions(**context):
     logging.info("Starting extraction from Aviasales API (popular directions from Moscow)")
-    API_TOKEN = "b7721379bd50af994b608f3216348cb4"
     origins = ['MOW']
     all_directions = []
     url = "https://api.travelpayouts.com/v1/city-directions"
@@ -31,7 +31,7 @@ def extract_popular_directions(**context):
             params = {
                 'origin': origin,
                 'currency': 'rub',
-                'token': API_TOKEN
+                'token': AVIASALES_API_TOKEN
             }
 
             response = requests.get(url, params=params, timeout=30)
