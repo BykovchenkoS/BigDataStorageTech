@@ -170,7 +170,7 @@ def load_directions_to_oracle(**context):
         return
     try:
         dsn = Oracle.makedsn("oracle-ods", 1521, service_name="XEPDB1")
-        conn = Oracle.connect(user="system", password="oracle", dsn=dsn)
+        conn = Oracle.connect(user="aviasales", password="aviasales", dsn=dsn)
         cursor = conn.cursor()
         try:
             cursor.execute("""
@@ -218,12 +218,13 @@ def load_directions_to_oracle(**context):
 
 with DAG('aviasales_popular_directions', default_args=default_args, description='ETL process for popular directions (Mongo, Redis, Oracle)',
         schedule_interval=timedelta(hours=6), catchup=False, tags=['aviasales', 'popular_directions', 'etl'],
-) as dag:
+         ) as dag:
     extract_task = PythonOperator(task_id='extract_popular_directions', python_callable=extract_popular_directions)
     transform_task = PythonOperator(task_id='transform_directions', python_callable=transform_directions)
-    load_mongo_task = PythonOperator(task_id='load_directions_to_mongodb', python_callable=load_directions_to_mongodb)
-    load_redis_task = PythonOperator(task_id='load_directions_to_redis', python_callable=load_directions_to_redis)
+    # load_mongo_task = PythonOperator(task_id='load_directions_to_mongodb', python_callable=load_directions_to_mongodb)
+    # load_redis_task = PythonOperator(task_id='load_directions_to_redis', python_callable=load_directions_to_redis)
     load_oracle_task = PythonOperator(task_id='load_directions_to_oracle', python_callable=load_directions_to_oracle)
 
     extract_task >> transform_task
-    transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    # transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    transform_task >> load_oracle_task

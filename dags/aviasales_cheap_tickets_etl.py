@@ -32,7 +32,7 @@ def extract_cheap_tickets(**context):
                 'origin': 'MOW',
                 'destination': destination,
                 'currency': 'rub',
-                'departure_at': '2025-10',
+                'departure_at': '2025-11',
                 'group_by': 'departure_at',
                 'token': AVIASALES_API_TOKEN
             }
@@ -180,7 +180,7 @@ def load_to_oracle(**context):
 
     try:
         dsn = Oracle.makedsn("oracle-ods", 1521, service_name="XEPDB1")
-        conn = Oracle.connect(user="system", password="oracle", dsn=dsn)
+        conn = Oracle.connect(user="aviasales", password="aviasales", dsn=dsn)
         cursor = conn.cursor()
 
         try:
@@ -227,19 +227,15 @@ def load_to_oracle(**context):
         raise
 
 
-with DAG(
-        'aviasales_cheap_tickets',
-        default_args=default_args,
-        description='ETL process for cheap tickets (Mongo, Redis, Oracle)',
-        schedule_interval=timedelta(hours=6),
-        catchup=False,
-        tags=['aviasales', 'cheap_tickets', 'etl'],
-) as dag:
+with DAG('aviasales_cheap_tickets', default_args=default_args, description='ETL process for cheap tickets (Mongo, Redis, Oracle)',
+        schedule=timedelta(hours=6), catchup=False, tags=['aviasales', 'cheap_tickets', 'etl'],
+         ) as dag:
     extract_task = PythonOperator(task_id='extract_cheap_tickets', python_callable=extract_cheap_tickets)
     transform_task = PythonOperator(task_id='transform_tickets', python_callable=transform_tickets)
-    load_mongo_task = PythonOperator(task_id='load_to_mongodb', python_callable=load_to_mongodb)
-    load_redis_task = PythonOperator(task_id='load_to_redis', python_callable=load_to_redis)
+    # load_mongo_task = PythonOperator(task_id='load_to_mongodb', python_callable=load_to_mongodb)
+    # load_redis_task = PythonOperator(task_id='load_to_redis', python_callable=load_to_redis)
     load_oracle_task = PythonOperator(task_id='load_to_oracle', python_callable=load_to_oracle)
 
     extract_task >> transform_task
-    transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    # transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    transform_task >> load_oracle_task

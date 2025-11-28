@@ -86,38 +86,43 @@ x-airflow-common:
       condition: service_healthy
 
 services:
-  mongodb-ods:
-    image: mongo:6
-    container_name: mongodb-ods
-    ports:
-      - "27018:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    volumes:
-      - mongodb_data:/data/db
+#  mongodb-ods:
+#    image: mongo:6
+#    container_name: mongodb-ods
+#    ports:
+#      - "27018:27017"
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: root
+#      MONGO_INITDB_ROOT_PASSWORD: example
+#    volumes:
+#      - mongodb_data:/data/db
 
-  redis-ods:
-    image: redis:7
-    container_name: redis-ods
-    ports:
-      - "6380:6379"
-    command: redis-server --save 60 1 --loglevel warning
-    volumes:
-      - redis_data:/data
+#  redis-ods:
+#    image: redis:7
+#    container_name: redis-ods
+#    ports:
+#      - "6380:6379"
+#    command: redis-server --save 60 1 --loglevel warning
+#    volumes:
+#      - redis_data:/data
 
   oracle-ods:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-ods
-    ports:
-      - "1522:1521"
     environment:
-      ORACLE_PASSWORD: oracle
-      APP_USER: ods_user
-      APP_USER_PASSWORD: ods_pass
+      - ORACLE_PASSWORD=oracle
+      - APP_USER=aviasales
+      - APP_USER_PASSWORD=aviasales
+    ports:
+      - "1521:1521"
     volumes:
       - oracle_data:/opt/oracle/oradata
-    shm_size: 1g
+      - ./oracle-init:/container-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "sqlplus -S system/oracle@//localhost:1521/XEPDB1 <<< 'exit'" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     
   postgres:
     image: postgres:13
@@ -331,6 +336,6 @@ services:
 
 volumes:
   postgres-db-volume:
-  mongodb_data:
-  redis_data:
+#  mongodb_data:
+#  redis_data:
   oracle_data:

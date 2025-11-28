@@ -24,7 +24,7 @@ default_args = {
 def extract_price_trends(**context):
     logging.info("Starting extraction from Aviasales API (price trends)")
     routes = [('MOW', 'LED')]
-    depart_month = '2025-10'
+    depart_month = '2025-11'
     all_prices = []
     url = "https://api.travelpayouts.com/v1/prices/calendar"
 
@@ -179,7 +179,7 @@ def load_prices_to_oracle(**context):
 
     try:
         dsn = Oracle.makedsn("oracle-ods", 1521, service_name="XEPDB1")
-        conn = Oracle.connect(user="system", password="oracle", dsn=dsn)
+        conn = Oracle.connect(user="aviasales", password="aviasales", dsn=dsn)
         cursor = conn.cursor()
 
         try:
@@ -228,12 +228,13 @@ def load_prices_to_oracle(**context):
 
 with DAG('aviasales_price_trends',default_args=default_args, description='ETL process for flight price trends (Mongo, Redis, Oracle)',
          schedule_interval=timedelta(hours=6), catchup=False, tags=['aviasales', 'price_trends', 'etl'],
-) as dag:
+         ) as dag:
     extract_task = PythonOperator(task_id='extract_price_trends', python_callable=extract_price_trends)
     transform_task = PythonOperator(task_id='transform_price_trends', python_callable=transform_price_trends)
-    load_mongo_task = PythonOperator(task_id='load_prices_to_mongodb', python_callable=load_prices_to_mongodb)
-    load_redis_task = PythonOperator(task_id='load_prices_to_redis', python_callable=load_prices_to_redis)
+    # load_mongo_task = PythonOperator(task_id='load_prices_to_mongodb', python_callable=load_prices_to_mongodb)
+    # load_redis_task = PythonOperator(task_id='load_prices_to_redis', python_callable=load_prices_to_redis)
     load_oracle_task = PythonOperator(task_id='load_prices_to_oracle', python_callable=load_prices_to_oracle)
 
     extract_task >> transform_task
-    transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    # transform_task >> [load_mongo_task, load_redis_task, load_oracle_task]
+    transform_task >> load_oracle_task

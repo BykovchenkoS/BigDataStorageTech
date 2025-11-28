@@ -98,7 +98,7 @@ def benchmark_redis():
 def benchmark_oracle():
     test_data = generate_test_data(500)
     dsn = oracledb.makedsn("oracle-ods", 1521, service_name="XEPDB1")
-    conn = oracledb.connect(user="system", password="oracle", dsn=dsn)
+    conn = oracledb.connect(user="aviasales", password="aviasales", dsn=dsn)
     cursor = conn.cursor()
 
     try:
@@ -246,8 +246,8 @@ def analyze_results(**context):
 
 
 with DAG('benchmark_databases', default_args=default_args, description='DB performance benchmark comparison',
-         schedule_interval=None, catchup=False, tags=['benchmark', 'analysis'],
-) as dag:
+         schedule_interval=None, catchup=False, tags=['aviasales', 'benchmark', 'analysis'],
+         ) as dag:
     benchmark_mongo = PythonOperator(task_id='benchmark_mongodb', python_callable=benchmark_mongodb)
     benchmark_redis = PythonOperator(task_id='benchmark_redis', python_callable=benchmark_redis)
     benchmark_oracle = PythonOperator(task_id='benchmark_oracle', python_callable=benchmark_oracle)
