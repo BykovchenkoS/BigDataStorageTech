@@ -260,6 +260,9 @@ def _get_airline_info(airline_code):
         'Y7': ('Nordstar Airlines', 'Russia'),
         '6W': ('Saratov Airlines', 'Russia'),
         'B2': ('Belavia', 'Belarus'),
+        '2S': ('Southwind Airlines', 'Russia'),
+        '6R': ('ALROSA', 'Russia'),
+
     }
     return mapping.get(airline_code, (airline_code, 'Unknown'))
 

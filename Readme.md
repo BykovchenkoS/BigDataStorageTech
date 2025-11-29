@@ -369,3 +369,83 @@ ticket_id, origin, destination, departure_at, price, airline, transfers, duratio
 - Комплексной системы проверки качества данных
 
 Все процессы работают корректно и обеспечивают надежную загрузку данных из ODS в DDS слой с сохранением целостности и качества данных.
+
+### Примеры запросов
+
+- Сколько рейсов каждого типа (прямые, с одной/многими пересадками) было найдено и какова средняя цена по каждому типу.
+- Анализ влияния количества пересадок на стоимость билета.
+
+```chatinput
+SET LINESIZE 200
+SET PAGESIZE 50
+COLUMN flight_type FORMAT A20
+COLUMN count_flights FORMAT 99999
+COLUMN avg_price FORMAT 99999
+
+SELECT
+    ft.type_category AS "Тип перелёта",
+    COUNT(*) AS "Кол-во рейсов",
+    ROUND(AVG(f.price), 2) AS "Средняя цена"
+FROM fact_flights f
+JOIN dim_flight_type ft ON f.flight_type_id = ft.flight_type_id
+GROUP BY ft.type_category, ft.flight_type_id
+ORDER BY ft.flight_type_id;
+```
+![img.png](img_readme/img_11.png)
+
+- Детализированные данные по самым дорогим билетам: маршрут, авиакомпания, дата, цена, длительность и количество пересадок.
+- Выявление аномалий или премиальных предложений; демонстрация полной связности модели «звезда».
+
+```chatinput
+COLUMN flight_id FORMAT A15
+COLUMN route FORMAT A30
+COLUMN airline_name FORMAT A20
+COLUMN full_date FORMAT A12
+COLUMN price FORMAT 99999
+COLUMN duration FORMAT 9999
+COLUMN transfers FORMAT 99
+
+SELECT
+    f.flight_id,
+    orig.city || ' -> ' || dest.city AS route,
+    a.airline_name,
+    TO_CHAR(d.full_date, 'DD-MON-YYYY') AS full_date,
+    f.price,
+    ft.transfers_count AS transfers,
+    f.duration
+FROM fact_flights f
+JOIN dim_route r ON f.route_id = r.route_id
+JOIN dim_airport orig ON r.origin_airport_id = orig.airport_id
+JOIN dim_airport dest ON r.destination_airport_id = dest.airport_id
+JOIN dim_airline a ON f.airline_sk = a.airline_sk
+JOIN dim_date d ON f.date_id = d.date_id
+JOIN dim_flight_type ft ON f.flight_type_id = ft.flight_type_id
+ORDER BY f.price DESC
+FETCH FIRST 10 ROWS ONLY;
+```
+![img.png](img_readme/img_13.png)
+
+- Статистика по каждому направлению: количество рейсов, среднюю, минимальную и максимальную цену.
+- Оценка популярности и ценовой динамики направлений (может стать основой для рекомендательных систем и прогнозирования).
+
+```chatinput
+COLUMN route FORMAT A30
+COLUMN flights FORMAT 9999
+COLUMN avg_price FORMAT 99999
+COLUMN min_price FORMAT 99999
+COLUMN max_price FORMAT 99999
+
+SELECT
+    orig.city || ' -> ' || dest.city AS route,
+    COUNT(*) AS flights,
+    ROUND(AVG(f.price), 2) AS avg_price,
+    MIN(f.price) AS min_price,
+    MAX(f.price) AS max_price
+FROM fact_flights f
+JOIN dim_route r ON f.route_id = r.route_id
+JOIN dim_airport orig ON r.origin_airport_id = orig.airport_id
+JOIN dim_airport dest ON r.destination_airport_id = dest.airport_id
+GROUP BY orig.city, dest.city
+ORDER BY avg_price DESC;
+```
+![img.png](img_readme/img_12.png)
