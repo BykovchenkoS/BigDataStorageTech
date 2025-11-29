@@ -21,11 +21,11 @@ with DAG('dds_coordinator_triggers', default_args=default_args, description='Coo
     trigger_cheap_tickets = TriggerDagRunOperator(task_id='trigger_cheap_tickets', trigger_dag_id='aviasales_cheap_tickets',
                                                   wait_for_completion=True, reset_dag_run=False, execution_date='{{ ds }}')
 
-    trigger_popular_directions = TriggerDagRunOperator(task_id='trigger_popular_directions', trigger_dag_id='aviasales_popular_directions',
-                                                       wait_for_completion=True, reset_dag_run=False, execution_date='{{ ds }}')
+    # trigger_popular_directions = TriggerDagRunOperator(task_id='trigger_popular_directions', trigger_dag_id='aviasales_popular_directions',
+    #                                                    wait_for_completion=True, reset_dag_run=False, execution_date='{{ ds }}')
 
-    trigger_price_trends = TriggerDagRunOperator(task_id='trigger_price_trends', trigger_dag_id='aviasales_price_trends',
-                                                 wait_for_completion=True, reset_dag_run=False, execution_date='{{ ds }}')
+    # trigger_price_trends = TriggerDagRunOperator(task_id='trigger_price_trends', trigger_dag_id='aviasales_price_trends',
+    #                                              wait_for_completion=True, reset_dag_run=False, execution_date='{{ ds }}')
 
     trigger_airline_scd2 = TriggerDagRunOperator(task_id='trigger_airline_scd2', trigger_dag_id='dds_airline_scd2',
                                                  wait_for_completion=True, reset_dag_run=True)
@@ -41,6 +41,11 @@ with DAG('dds_coordinator_triggers', default_args=default_args, description='Coo
 
     pipeline_complete = DummyOperator(task_id='pipeline_complete')
 
-    start_pipeline >> [trigger_cheap_tickets, trigger_popular_directions, trigger_price_trends]
-    [trigger_cheap_tickets, trigger_popular_directions, trigger_price_trends] >> trigger_airline_scd2
-    trigger_airline_scd2 >> trigger_dimensions >> trigger_fact >> trigger_data_quality >> pipeline_complete
+    # start_pipeline >> [trigger_cheap_tickets, trigger_popular_directions, trigger_price_trends]
+    # [trigger_cheap_tickets, trigger_popular_directions, trigger_price_trends] >> trigger_airline_scd2
+    # trigger_airline_scd2 >> trigger_dimensions >> trigger_fact >> trigger_data_quality >> pipeline_complete
+
+    start_pipeline >> trigger_cheap_tickets
+    trigger_cheap_tickets >> [trigger_airline_scd2, trigger_dimensions]
+    [trigger_airline_scd2, trigger_dimensions] >> trigger_fact
+    trigger_fact >> trigger_data_quality >> pipeline_complete
