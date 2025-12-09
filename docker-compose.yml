@@ -334,8 +334,37 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+    image: apache/superset:latest
+    container_name: superset
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_SECRET_KEY=superset-secret-key-12345-change-me-please
+    volumes:
+      - superset_data:/app/superset_home
+    command: >
+      bash -c "superset db upgrade && superset fab create-admin --username admin --firstname Admin --lastname User --email admin@example.com --password admin 2>/dev/null || true && superset init 2>/dev/null || true && superset run -h 0.0.0.0 -p 8088 --with-threads --reload --debugger"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8088/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  default:
+    name: airflow-network
+    external: true
+
 volumes:
   postgres-db-volume:
 #  mongodb_data:
 #  redis_data:
   oracle_data:
+  superset_data:
+

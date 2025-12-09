@@ -1,0 +1,27 @@
+FROM apache/superset:latest
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y libaio1 unzip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY instantclient-basic-linux.x64-23.26.0.0.0.zip /tmp/
+
+RUN mkdir -p /opt/oracle && \
+    cd /opt/oracle && \
+    unzip -o /tmp/instantclient-basic-linux.x64-23.26.0.0.0.zip && \
+    rm -f /tmp/instantclient-basic-linux.x64-23.26.0.0.0.zip && \
+    echo "/opt/oracle/instantclient_23_26" > /etc/ld.so.conf.d/oracle-instantclient.conf && \
+    ldconfig
+
+RUN pip install cx_Oracle==8.3.0
+
+RUN echo "/usr/local/lib/python3.10/site-packages" > /app/.venv/lib/python3.10/site-packages/oracle.pth
+
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_23_26
+ENV ORACLE_HOME=/opt/oracle/instantclient_23_26
+ENV SQLALCHEMY_SILENCE_UBER_WARNING=1
+
+USER superset
