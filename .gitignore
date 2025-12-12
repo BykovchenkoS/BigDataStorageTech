@@ -1,0 +1,19 @@
+config/config.py
+
+# Logs
+logs/
+*.log
+
+# Airflow logs и директории
+airflow/logs/
+
+# Oracle Instant Client
+instantclient-basic-linux.x64-*.zip
+instantclient-*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
