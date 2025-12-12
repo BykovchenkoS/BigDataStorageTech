@@ -553,6 +553,8 @@ GROUP BY r.route_id, o.city, d.city;
 
 Дашборд обновляется ежедневно в 02:00 через Airflow.
 
+![img.png](img_readme/tsbd.png)
+![img.png](img_readme/tsbd1.png)
 
 ### Аналитические выводы
 На основе визуализаций сделаны следующие выводы:
